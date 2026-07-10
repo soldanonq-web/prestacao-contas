@@ -23,7 +23,8 @@ input::placeholder { color: #9ca3af; }
 .radio-row { display: flex; flex-direction: column; gap: 8px; }
 .radio-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
 .radio-opt:has(input:checked) { border-color: #1F3864; background: #f0f4fb; }
-.radio-opt input[type=radio] { margin-top: 3px; accent-color: #1F3864; flex-shrink: 0; }
+.radio-opt input[type=radio] { width: auto; margin-top: 3px; accent-color: #1F3864; flex-shrink: 0; }
+.radio-opt-label { flex: 1 1 auto; min-width: 0; }
 .radio-opt-label { font-size: 13px; color: #374151; line-height: 1.4; }
 .radio-opt-label strong { display: block; font-size: 14px; color: #111827; margin-bottom: 2px; }
 .sub-field { margin-top: 10px; display: none; }
