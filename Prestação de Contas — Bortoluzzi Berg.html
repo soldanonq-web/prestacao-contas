@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prestação de Contas — Bortoluzzi Berg Advogado</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; }
+  header { background: #1F3864; color: white; padding: 1rem 1.5rem; }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+  .container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  .card { background: white; border-radius: 12px; border: 1px solid #e2e6ea; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 1rem; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .full { grid-column: 1 / -1; }
+  label { display: block; font-size: 13px; color: #374151; margin-bottom: 4px; font-weight: 500; }
+  input, select { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827; background: #fff; outline: none; transition: border-color 0.15s; }
+  input:focus, select:focus { border-color: #1F3864; box-shadow: 0 0 0 3px rgba(31,56,100,0.1); }
+  input::placeholder { color: #9ca3af; }
+  .radio-row { display: flex; flex-direction: column; gap: 8px; }
+  .radio-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .radio-opt:has(input:checked) { border-color: #1F3864; background: #f0f4fb; }
+  .radio-opt input[type=radio] { margin-top: 3px; accent-color: #1F3864; }
+  .radio-opt-label { font-size: 13px; color: #374151; line-height: 1.4; }
+  .radio-opt-label strong { display: block; font-size: 14px; color: #111827; margin-bottom: 2px; }
+  .sub-field { margin-top: 10px; display: none; }
+  .sub-field.visible { display: block; }
+  .resumo { background: #f8fafc; border-radius: 10px; overflow: hidden; border: 1px solid #e2e6ea; }
+  .resumo-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; font-size: 14px; border-bottom: 1px solid #e9ecef; }
+  .resumo-row:last-child { border-bottom: none; background: #eaf3e0; font-weight: 600; }
+  .resumo-row span:first-child { color: #6b7280; }
+  .resumo-row:last-child span { color: #1a6b3c; }
+  .btn { width: 100%; padding: 13px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn-primary { background: #1F3864; color: white; margin-top: 4px; }
+  .btn-primary:hover { background: #162a4d; }
+  .tag-obrigatorio { color: #ef4444; margin-left: 2px; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } .full { grid-column: 1; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bortoluzzi Berg Advogado</h1>
+  <p>OAB/SC 28.996 — Gerador de Prestação de Contas</p>
+</header>
+<div class="container">
+
+  <div class="card">
+    <div class="card-title">Dados do processo</div>
+    <div class="grid">
+      <div class="full">
+        <label>Número do processo <span class="tag-obrigatorio">*</span></label>
+        <input type="text" id="processo" placeholder="0000000-00.0000.0.00.0000">
+      </div>
+      <div class="full">
+        <label>Nome do cliente <span class="tag-obrigatorio">*</span></label>
+        <input type="text" id="cliente" placeholder="NOME COMPLETO">
+      </div>
+      <div class="full">
+        <label>Objeto / ação <span class="tag-obrigatorio">*</span></label>
+        <select id="objeto" onchange="toggleObjeto()">
+          <option value="Conversão de licença especial em pecúnia">Conversão de licença especial em pecúnia</option>
+          <option value="Conversão de licença prêmio em pecúnia">Conversão de licença prêmio em pecúnia</option>
+          <option value="Pagamento de auxílio alimentação">Pagamento de auxílio alimentação</option>
+          <option value="outro">Outro (digitar abaixo)</option>
+        </select>
+        <div class="sub-field" id="objeto-custom-wrap">
+          <input type="text" id="objeto-custom" placeholder="Descreva o objeto da ação" style="margin-top:8px">
+        </div>
+      </div>
+      <div>
+        <label>Valor recebido (R$) <span class="tag-obrigatorio">*</span></label>
+        <input type="number" id="valor" placeholder="0.00" step="0.01" min="0" oninput="calcular()">
+      </div>
+      <div>
+        <label>Honorários (%) <span class="tag-obrigatorio">*</span></label>
+        <input type="number" id="percentual" value="6" step="0.5" min="0" max="100" oninput="calcular()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fluxo do pagamento</div>
+    <div class="radio-row">
+      <label class="radio-opt">
+        <input type="radio" name="fluxo" value="cliente_repassa" checked onchange="toggleFluxo()">
+        <span class="radio-opt-label">
+          <strong>Cliente recebeu → repassa ao escritório</strong>
+          O valor foi depositado na conta do cliente, que transfere os honorários ao escritório via PIX.
+        </span>
+      </label>
+      <label class="radio-opt">
+        <input type="radio" name="fluxo" value="escritorio_repassa" onchange="toggleFluxo()">
+        <span class="radio-opt-label">
+          <strong>Escritório recebeu → repassa ao cliente</strong>
+          O alvará foi levantado pelo escritório, que repassa o valor líquido ao cliente via PIX.
+        </span>
+      </label>
+    </div>
+
+    <div class="sub-field visible" id="bloco-pix-esc">
+      <div class="grid" style="margin-top:10px">
+        <div>
+          <label>Chave PIX do escritório</label>
+          <input type="text" id="pix-esc-val" value="719.206.339-87">
+        </div>
+        <div>
+          <label>Tipo de chave</label>
+          <select id="pix-esc-tipo">
+            <option value="CPF">CPF</option>
+            <option value="e-mail">E-mail</option>
+            <option value="celular">Celular</option>
+            <option value="aleatória">Chave aleatória</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-field" id="bloco-pix-cli">
+      <div class="grid" style="margin-top:10px">
+        <div>
+          <label>Chave PIX do cliente</label>
+          <input type="text" id="pix-cli-val" placeholder="Deixe em branco se não souber">
+        </div>
+        <div>
+          <label>Tipo de chave</label>
+          <select id="pix-cli-tipo">
+            <option value="CPF">CPF</option>
+            <option value="e-mail">E-mail</option>
+            <option value="celular">Celular</option>
+            <option value="aleatória">Chave aleatória</option>
+          </select>
+        </div>
+        <div>
+          <label>Comprovante de liberação</label>
+          <input type="text" id="comprovante" placeholder="Ex: 26.090.007.11978">
+        </div>
+        <div>
+          <label>Data da liberação</label>
+          <input type="date" id="data-liberacao">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Demonstrativo</div>
+    <div class="resumo">
+      <div class="resumo-row"><span id="label-bruto">Valor recebido pelo cliente</span><span id="val-bruto">—</span></div>
+      <div class="resumo-row"><span id="label-hon">Honorários (6%)</span><span id="val-hon">—</span></div>
+      <div class="resumo-row"><span id="label-liq">Valor líquido do cliente</span><span id="val-liq">—</span></div>
+    </div>
+    <button class="btn btn-primary" onclick="gerarPDF()">⬇ Baixar Prestação de Contas em PDF</button>
+  </div>
+
+</div>
+<script>
+const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtDate = s => { if(!s) return ''; const [y,m,d]=s.split('-'); return d+'/'+m+'/'+y; };
+function fluxo(){ return document.querySelector('input[name="fluxo"]:checked').value; }
+function toggleObjeto(){ document.getElementById('objeto-custom-wrap').classList.toggle('visible', document.getElementById('objeto').value==='outro'); }
+function toggleFluxo(){
+  const f=fluxo();
+  document.getElementById('bloco-pix-esc').classList.toggle('visible', f==='cliente_repassa');
+  document.getElementById('bloco-pix-cli').classList.toggle('visible', f==='escritorio_repassa');
+  calcular();
+}
+function calcular(){
+  const valor=parseFloat(document.getElementById('valor').value)||0;
+  const perc=parseFloat(document.getElementById('percentual').value)||0;
+  const hon=valor*perc/100; const liq=valor-hon;
+  const f=fluxo();
+  document.getElementById('label-bruto').textContent = f==='cliente_repassa' ? 'Valor recebido pelo cliente' : 'Valor recebido pelo escritório';
+  document.getElementById('label-hon').textContent = 'Honorários ('+perc+'%)';
+  document.getElementById('label-liq').textContent = f==='cliente_repassa' ? 'Valor líquido do cliente' : 'Valor a repassar ao cliente';
+  document.getElementById('val-bruto').textContent = valor ? fmt(valor) : '—';
+  document.getElementById('val-hon').textContent = valor ? '('+fmt(hon)+')' : '—';
+  document.getElementById('val-liq').textContent = valor ? fmt(liq) : '—';
+}
+function gerarPDF(){
+  const processo=document.getElementById('processo').value.trim();
+  const cliente=document.getElementById('cliente').value.trim();
+  const objSel=document.getElementById('objeto').value;
+  const objeto=objSel==='outro' ? document.getElementById('objeto-custom').value.trim() : objSel;
+  const valor=parseFloat(document.getElementById('valor').value);
+  const perc=parseFloat(document.getElementById('percentual').value);
+  if(!processo||!cliente||!valor||!perc){ alert('Preencha os campos obrigatórios: processo, cliente, valor e honorários.'); return; }
+  const f=fluxo(); const hon=valor*perc/100; const liq=valor-hon;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,ml=20,mr=20,cw=W-ml-mr; let y=20;
+  const cor1=[31,56,100]; const corVerde=[213,232,212]; const corAzul=[238,242,255]; const corAm=[255,249,196];
+  const rowH=9; const col1=cw*0.60; const col2=cw*0.40;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...cor1);
+  doc.text('BORTOLUZZI BERG ADVOGADO',W/2,y,{align:'center'}); y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(80,80,80);
+  doc.text('OAB/SC 28.996',W/2,y,{align:'center'}); y+=5;
+  doc.text('Criciúma/SC',W/2,y,{align:'center'}); y+=4;
+  doc.setDrawColor(...cor1); doc.setLineWidth(0.5); doc.line(ml,y,W-mr,y); y+=8;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(30,30,30);
+  doc.text('PRESTAÇÃO DE CONTAS',W/2,y,{align:'center'}); y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(80,80,80);
+  doc.text('Processo nº '+processo,W/2,y,{align:'center'}); y+=5;
+  doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+  doc.text('Cliente: '+cliente,W/2,y,{align:'center'}); y+=5;
+  doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(100,100,100);
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  doc.text('Criciúma, '+hoje,W/2,y,{align:'center'}); y+=10;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+  doc.text('Objeto: ',ml,y);
+  const ow=doc.getTextWidth('Objeto: ');
+  doc.setFont('helvetica','normal'); doc.text(objeto+'.',ml+ow,y); y+=6;
+
+  if(f==='escritorio_repassa'){
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(80,80,80);
+    const txt='O alvará judicial foi levantado diretamente pelo escritório. O demonstrativo abaixo apresenta os valores recebidos, a dedução dos honorários advocatícios contratados e o saldo a ser repassado ao cliente.';
+    const lines=doc.splitTextToSize(txt,cw); doc.text(lines,ml,y); y+=lines.length*4.5+4;
+  }
+
+  doc.setFillColor(...cor1); doc.rect(ml,y,cw,rowH,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
+  doc.text('DEMONSTRATIVO FINANCEIRO',W/2,y+6,{align:'center'}); y+=rowH;
+
+  const labelBruto=f==='cliente_repassa' ? 'Valor depositado na conta do cliente (bruto)' : 'Valor do alvará recebido pelo escritório';
+  doc.setFillColor(...corAzul); doc.rect(ml,y,cw,rowH,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
+  doc.text(labelBruto,ml+3,y+6); doc.text(fmt(valor),ml+cw-3,y+6,{align:'right'}); y+=rowH;
+
+  doc.setFillColor(255,255,255); doc.rect(ml,y,cw,rowH,'F');
+  doc.text('Honorários advocatícios '+(f==='cliente_repassa'?'devidos':'retidos')+' ('+perc+'%)',ml+3,y+6);
+  doc.text('('+fmt(hon)+')',ml+cw-3,y+6,{align:'right'}); y+=rowH;
+
+  doc.setFillColor(...corVerde); doc.rect(ml,y,cw,rowH,'F');
+  doc.setFont('helvetica','bold');
+  const labelLiq=f==='cliente_repassa'?'Valor líquido do cliente':'Valor líquido a repassar ao cliente';
+  doc.text(labelLiq,ml+3,y+6); doc.text(fmt(liq),ml+cw-3,y+6,{align:'right'});
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.2); doc.rect(ml,y-rowH*2,cw,rowH*3,'S'); y+=rowH+8;
+
+  function drawTable(rows){
+    rows.forEach((row,i)=>{
+      if(i%2===0){doc.setFillColor(...corAzul);}else{doc.setFillColor(255,255,255);}
+      doc.rect(ml,y,cw,rowH,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
+      doc.text(row[0],ml+3,y+6);
+      if(i===rows.length-1){doc.setFillColor(...corAm); doc.rect(ml+col1,y,col2,rowH,'F'); doc.setFont('helvetica','bold');}
+      else{doc.setFont('helvetica','normal');}
+      doc.text(row[1],ml+cw-3,y+6,{align:'right'}); y+=rowH;
+    });
+    doc.setDrawColor(200,200,200); doc.setLineWidth(0.2); doc.rect(ml,y-rowH*rows.length,cw,rowH*rows.length,'S');
+  }
+
+  if(f==='cliente_repassa'){
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+    doc.text('INSTRUÇÃO PARA REPASSE DOS HONORÁRIOS',ml,y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(60,60,60);
+    const t2='O valor de '+fmt(hon)+' referente aos honorários advocatícios deverá ser transferido ao escritório mediante PIX, conforme dados abaixo:';
+    const l2=doc.splitTextToSize(t2,cw); doc.text(l2,ml,y); y+=l2.length*4.5+4;
+    const pixEV=document.getElementById('pix-esc-val').value.trim();
+    const pixET=document.getElementById('pix-esc-tipo').value;
+    drawTable([['Beneficiário','Luiz Fernando Bortoluzzi Berg – OAB/SC 28.996'],['Chave PIX ('+pixET+')',pixEV],['Valor a transferir',fmt(hon)]]);
+  } else {
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+    doc.text('REPASSE AO CLIENTE',ml,y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(60,60,60);
+    const pixCV=document.getElementById('pix-cli-val').value.trim();
+    const pixCT=document.getElementById('pix-cli-tipo').value;
+    const t3='O escritório realizará a transferência do valor líquido de '+fmt(liq)+' ao cliente '+cliente+' por meio de PIX, conforme chave indicada abaixo:';
+    const l3=doc.splitTextToSize(t3,cw); doc.text(l3,ml,y); y+=l3.length*4.5+4;
+    drawTable([['Favorecido',cliente],['Chave PIX ('+pixCT+')',pixCV||'______________________________'],['Valor a transferir',fmt(liq)]]);
+    const comp=document.getElementById('comprovante').value.trim();
+    const dataLib=document.getElementById('data-liberacao').value;
+    if(comp||dataLib){ y+=8; drawTable([['Comprovante de liberação',comp||'—'],['Data da liberação',dataLib?fmtDate(dataLib):'—'],['Valor a repassar ao cliente',fmt(liq)]]); }
+  }
+
+  y+=10;
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.line(ml,y,W-mr,y); y+=5;
+  doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(120,120,120);
+  doc.text('Em caso de dúvidas, entre em contato com o escritório pelo WhatsApp ou pelo e-mail advogadosagb@gmail.com.',ml,y);
+
+  doc.save('prestacao_'+cliente.split(' ')[0].toLowerCase()+'.pdf');
+}
+</script>
+</body>
+</html>
